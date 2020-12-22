@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<label><input id="hide_num" type="checkbox">hide_num</label>
+<label><input id="hide_url" type="checkbox">hide_url</label>
+
+<div id="collection_nav">
+    <b>collection_nav b</b>
+    <span>collection_nav span</span>
+</div>
+<div id="recommend_nav">
+    <b>recommend_nav b</b>
+</div>
+<div id="recently_nav">
+    <span>recently_nav span</span>
+</div>
+
+
+<script>
+    var Mediator = (function () {
+        var _msg = {};
+        return {
+            register: function (type, action) {
+                if (_msg[type]) {
+                    _msg[type].push(action);
+                } else {
+                    _msg[type] = [];
+                    _msg[type].push(action);
+                }
+            },
+            send: function (type) {
+                if (_msg[type]) {
+                    for (var i = 0; i < _msg[type].length; i++) {
+                        _msg[type][i] && _msg[type][i]();
+                    }
+                }
+            }
+        };
+    })();
+
+    Mediator.register('demo', function () {
+        console.log('first');
+    });
+    Mediator.register('demo', function () {
+        console.log('second');
+    });
+
+    Mediator.send('demo');
+
+
+    var showHideNavWidget = function (mod, tag, showOrHide) {
+        mod = document.getElementById(mod);
+        tag = mod.getElementsByTagName(tag);
+        showOrHide = (!showOrHide || showOrHide === 'hide') ? 'hidden' : 'visible';
+
+        for (var i = tag.length - 1; i > -1; i--) {
+            tag[i].style.visibility = showOrHide;
+        }
+    };
+
+    (function () {
+        Mediator.register('hideAllNavNum', function () {
+            showHideNavWidget('collection_nav', 'b', false);
+        });
+        Mediator.register('showAllNavNum', function () {
+            showHideNavWidget('collection_nav', 'b', true);
+        });
+        Mediator.register('hideAllNavUrl', function () {
+            showHideNavWidget('collection_nav', 'span', false);
+        });
+        Mediator.register('showAllNavUrl', function () {
+            showHideNavWidget('collection_nav', 'span', true);
+        });
+    })();
+
+    (function () {
+        Mediator.register('hideAllNavNum', function () {
+            showHideNavWidget('recommend_nav', 'b', false);
+        });
+        Mediator.register('showAllNavNum', function () {
+            showHideNavWidget('recommend_nav', 'b', true);
+        });
+    })();
+
+    (function () {
+        Mediator.register('hideAllNavUrl', function () {
+            showHideNavWidget('recently_nav', 'span', 'hide');
+        });
+        Mediator.register('showAllNavUrl', function () {
+            showHideNavWidget('recently_nav', 'span', 'show');
+        });
+    })();
+
+
+    (function () {
+        var hideNum = document.getElementById('hide_num'),
+                hideUrl = document.getElementById('hide_url');
+        hideNum.onchange = function () {
+            if (hideNum.checked) {
+                Mediator.send('hideAllNavNum');
+            } else {
+                Mediator.send('showAllNavNum');
+            }
+        };
+        hideUrl.onchange = function () {
+            if (hideUrl.checked) {
+                Mediator.send('hideAllNavUrl');
+            } else {
+                Mediator.send('showAllNavUrl');
+            }
+        };
+    })();
+
+</script>
+</body>
+</html>

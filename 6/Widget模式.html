@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="test"></div>
+
+<div id="demo_tag" class="template">
+
+    <!--<div id="tag_cloud">-->
+        <!--{%-->
+        <!--for (var i = 0; i < tagCloud.length; i++) {-->
+        <!--var ctx = tagCloud[i];-->
+        <!--%}-->
+
+        <!--<a href="#" class="tag_item{%-->
+            <!--if (ctx['isSelected']) { %}-->
+                <!--selected-->
+            <!--{% } %}-->
+        <!--" title="{%ctx['title']%}">{%ctx['text']%}</a>-->
+
+        <!--{% } %}-->
+    <!--</div>-->
+
+    <!--<textarea name="" id="demo_textarea" class="template" cols="30" rows="10">-->
+        <!--<div id="tag_cloud">-->
+            <!--{%-->
+                <!--for (var i = 0; i < tagCloud.length; i++) {-->
+                    <!--var ctx = tagCloud[i];-->
+            <!--%}-->
+
+            <!--<a href="#" class="tag_item{%-->
+                <!--if (ctx['isSelected']) { %}-->
+                    <!--selected-->
+                <!--{% } %}-->
+            <!--" title="{%ctx['title']%}">{%ctx['text']%}</a>-->
+
+            <!--{% } %}-->
+        <!--</div>-->
+    <!--</textarea>-->
+
+    <script type="text/template" id="demo_script">
+        <div id="tag_cloud">
+            {%
+                for (var i = 0; i < tagCloud.length; i++) {
+                    var ctx = tagCloud[i];
+            %}
+
+            <a href="#" class="tag_item
+            {% if (ctx['isSelected']) { %}
+                    selected
+                {% } %}
+            " title="{%=ctx['title']%}">{%=ctx['text']%}</a>
+
+            {% } %}
+        </div>
+    </script>
+
+</div>
+
+<script src="Fmodule.js"></script>
+<script>
+    var demo_tpl =  "<div id=\"tag_cloud\"> {%for (var i = 0; i < tagCloud.length; i++) {var ctx = tagCloud[i];%}<a href=\"#\" class=\"tag_item{%if (ctx['isSelected']) { %}selected{% } %}\" title=\"{%ctx['title']%}\">{%ctx['text']%}</a> {% } %}</div>";
+
+    var data = {
+        tagCloud: [
+            {isSelected: true, title: 'a', text: 'a1'},
+            {isSelected: false, title: 'b', text: 'b1'},
+            {isSelected: null, title: 'c', text: 'c1'},
+            {isSelected: 1, title: 'd', text: 'd1'}
+        ]
+    };
+
+    F.module(['lib/template', 'lib/dom'], function (tpl, dom) {
+        var str = tpl('demo_script', data);
+        dom.html('test', str);
+    });
+</script>
+</body>
+</html>

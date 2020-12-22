@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script>
+    function formatString(str, data) {
+        return str.replace(/\{\{(\w+)}}/g, function (match, key) {
+            return data[key] ? data[key] : '';
+        });
+    }
+    var Nav = function (data) {
+        this.item = '<a href="{{href}}" title="{{title}}">{{name}}</a>';
+        this.html = '';
+        for (var i = 0; i < data.length; i++) {
+            this.html += formatString(this.item, data[i]);
+        }
+        return this.html;
+    };
+
+    var NumNav = function (data) {
+        var tpl = '<b>{{num}}</b>';
+        for (var i = data.length - 1; i > -1; i--) {
+            data[i].name += data[i].name + formatString(tpl, data[i]);
+        }
+        return Nav.call(this, data);
+    };
+
+    var LinkNav = function (data) {
+        var tpl = '<span>{{href}}</span>';
+        for (var i = data.length - 1; i > -1; i--) {
+            data[i].name += data[i].name + formatString(tpl, data[i]);
+        }
+        return Nav.call(this, data);
+    };
+
+
+    var nav = document.getElementById('content');
+    nav.innerHTML = LinkNav([
+        {
+            href: 'http://www.baidu.com/',
+            title: '百度一下，你就知道',
+            name: '百度',
+            num: '10'
+        },
+        {
+            href: 'http://www.taobao.com/',
+            title: '淘宝商城',
+            name: '淘宝',
+            num: '2'
+        },
+        {
+            href: 'http://www.qq.com/',
+            title: '腾讯首页',
+            name: '腾讯',
+            num: '3'
+        }
+    ]);
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .red {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<p id="test"></p>
+<p id="test-2"></p>
+<p id="test-3">       &nbsp; hello </p>
+
+<script>
+    var F = F || {};
+
+    F.define = function (str, fn) {
+        var parts = str.split('.'),
+                parent,
+                old = parent = this;
+
+        if (parts[0] === 'F') {
+            parts = parts.slice(1);
+        }
+        if (parts[0] === 'define' || parts[0] === 'module') {
+            return;
+        }
+        for (var i = 0; i < parts.length; i++) {
+            if (!parent[parts[i]]) {
+                parent[parts[i]] = {};
+            }
+            old = parent;
+            parent = parent[parts[i]];
+        }
+        if (fn) {
+            old[parts[--i]] = fn();
+        }
+        return this;
+    };
+
+
+    //--------------------------------------------
+    F.define('string', function () {
+        return {
+            trim: function (str) {
+                return str.replace(/^\s+|\s+$/g, '');
+            }
+        };
+    });
+
+    console.log(F.string.trim(' hi    '));
+
+    F.define('dom', function () {
+        var $ = function (id) {
+            $.dom = document.getElementById(id);
+            return $;
+        };
+
+        $.html = function (html) {
+            if (html) {
+                this.dom.innerHTML = html;
+                return this;
+            } else {
+                return this.dom.innerHTML;
+            }
+        };
+        return $;
+    });
+
+    F.dom('test').html('it does work');
+
+    F.define('dom.addClass');
+    F.dom.addClass = function (type, fn) {
+        return function (className) {
+            if (this.dom.className.indexOf(className) < 0) {
+                this.dom.className += ' ' + className;
+            }
+        }
+    }();
+
+    F.dom('test').addClass('red');
+
+
+    //-------------------------------------
+    F.module = function () {
+        var
+                args = [].slice.call(arguments),
+                fn = args.pop(),
+                parts = args[0] && args[0] instanceof Array ? args[0] : args,
+                modules = [],
+                moduleIDs = '',
+                parent,
+                i = 0,
+                ilen = parts.length;
+
+        while (i < ilen) {
+            if (typeof parts[i] === 'string') {
+                parent = this;
+                moduleIDs = parts[i].replace(/^F\./, '').split('.');
+                for (var j = 0; j < moduleIDs.length; j++) {
+                    parent = parent[moduleIDs[j]] || false;
+                }
+                modules.push(parent);
+            } else {
+                modules.push(parts[i]);
+            }
+            i++;
+        }
+
+        fn.apply(null, modules);
+    };
+
+    F.module(['dom', document], function (dom, doc) {
+        dom('test-2').html('module call');
+        doc.body.style.backgroundColor = 'lightgreen';
+    });
+
+    F.module('dom', 'string.trim', function (dom, trim) {
+        var html = dom('test-3').html();
+        var str = trim(html);
+
+        console.log('*' + html + '*');
+        console.log('*' + str + '*');
+    });
+</script>
+</body>
+</html>

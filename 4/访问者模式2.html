@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+    var Visitor = (function () {
+        return {
+            splice: function () {
+                var args = [].splice.call(arguments, 1);
+                return [].splice.apply(arguments[0], args);
+            },
+            push: function () {
+                var len = arguments[0].length || 0;
+                var args = this.splice(arguments, 1);
+                arguments[0].length = len + arguments.length - 1;
+                return [].push.apply(arguments[0], args);
+            },
+            pop: function () {
+                return [].pop.apply(arguments[0]);
+            }
+        };
+    })();
+
+    var obj = {};
+    console.log(obj);
+    Visitor.push(obj, 1, '2', [3]);
+    console.log(obj);
+    Visitor.push(obj, 4, 5, 6);
+    console.log(obj);
+
+    console.log(Visitor.splice(obj, 2));
+    console.log(obj);
+    console.log(Visitor.pop(obj));
+    console.log(obj);
+
+</script>
+</body>
+</html>

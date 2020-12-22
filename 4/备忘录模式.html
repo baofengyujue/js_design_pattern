@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<button id="next_page">next_page</button>
+<button id="prev_page">prev_page</button>
+<div id="news_content" data-page="1">
+    <h1>header</h1>
+    <p>caption</p>
+</div>
+
+<script src="jquery-1.12.3.js"></script>
+<script>
+
+    var showPage = function (page, data) {
+        var $news = $('#news_content');
+        page = parseInt($news.data('page'));
+
+        $news.find('h1').eq(0).html(data['header']);
+        $news.find('p').eq(0).html(data['caption']);
+
+        console.log(333);
+        console.log(data['header']);
+
+    };
+
+    var Page = (function () {
+        var _cache = {};
+
+        return function (page, fn) {
+            if (_cache[page]) {
+                showPage(page, _cache[page]);
+                fn && fn();
+            } else {
+                $.post(
+                        'getNewsData.php',
+                        {page: page},
+                        function (data) {
+                            console.log(data);
+                            console.log(arguments);
+                            showPage(page, data);
+                            _cache[page] = data;
+                            fn && fn();
+                        },
+                        'json'
+                );
+            }
+        }
+    })();
+
+    $('#next_page').click(function () {
+        var $news = $('#news_content'),
+                page = parseInt($news.data('page'));
+
+        Page(page, function () {
+            $news.data('page', page + 1);
+        });
+    });
+    $('#prev_page').click(function () {
+        var $news = $('#news_content'),
+                page = parseInt($news.data('page'));
+
+        Page(page, function () {
+            $news.data('page', page + 1);
+        });
+    });
+</script>
+</body>
+</html>

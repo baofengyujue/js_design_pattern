@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input type="text">
+<input type="text">
+<ul></ul>
+<span></span>
+
+
+<script>
+
+    /**
+     * 异步请求对象简化版
+     * @param data          请求数据
+     * @param dealType      响应数据处理对象
+     * @param el            事件源
+     */
+    var sendData = function (data, dealType, el) {
+        var xhr = new XMLHttpRequest(),
+                url = 'getData.php?mod=userInfo';
+
+        xhr.onreadystatechange = function () {
+            if (this.status >= 200 && this.status < 300
+                    || this.status == 304) {
+                dealData(this.responseText, dealType, el);
+            } else {
+                console.log('请求失败');
+            }
+        };
+
+        for (var i in data) {
+            url += '&' + i + '=' + data[i];
+        }
+
+        xhr.open('get', url, true);
+        xhr.send(null);
+    };
+
+    /**
+     * 处理响应数据
+     * @param data
+     * @param dealType
+     * @param el
+     * @returns {*}
+     */
+    var dealData = function (data, dealType, el) {
+        var dataType = {}.toString.call(data);
+        switch (dealType) {
+            case 'sug':
+                if (dataType === '[object Array]') {
+                    return createSug(data, el);
+                }
+                if (dataType === '[object Object]') {
+                    var newData = [];
+                    for (var i in data) newData.push(data[i]);
+                    return createSug(newData, el);
+                }
+                return createSug([data], el);
+            case 'validate':
+                return createValidateResult(data, el);
+        }
+    };
+
+    /**
+     * 创建提示框组件
+     * @param data
+     * @param el
+     */
+    var createSug = function (data, el) {
+        var i = 0,
+                len = data.length,
+                html = '';
+        for (; i < len; i++) {
+            html += '<li>' + data[i] + '</li>';
+        }
+        el.parentNode.getElementsByTagName('ul')[0].innerHTML = html;
+    };
+
+    /**
+     * 创建校验组件
+     * @param data
+     * @param el
+     */
+    var createValidateResult = function (data, el) {
+        el.parentNode.getElementsByTagName('span')[0].innerHTML = data;
+    };
+
+    //---------------------
+    var input = document.getElementsByTagName('input');
+    dealData('用户名不正确', 'validate', input[0]);
+    dealData(123, 'sug', input[0]);
+    dealData(['爱奇艺', '阿里巴巴', '爱漫画'], 'sug', input[1]);
+    dealData({iqiyi: '爱奇艺', alibaba: '阿里巴巴', imh: '爱漫画'}, 'sug', input[1]);
+
+</script>
+</body>
+</html>

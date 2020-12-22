@@ -1,0 +1,1 @@
+<div id="tag_cloud"> <a href="#" class="tag_item selected " title="a">a1</a> <a href="#" class="tag_item " title="b">b1</a> <a href="#" class="tag_item " title="c">c1</a> <a href="#" class="tag_item selected " title="d">d1</a> </div>

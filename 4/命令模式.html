@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="title"></div>
+<div id="product"></div>
+
+<script>
+    var viewCommand = (function () {
+        var tpl = {
+            product: [
+                    '<div>',
+                        '<img src="{{src}}">',
+                        '<p>{{text}}</p>',
+                    '</div>'
+            ].join(''),
+            title: [
+                    '<div class="title">',
+                        '<div class="main">',
+                            '<h2>{{title}}</h2>',
+                            '<p>{{caption}}</p>',
+                        '</div>',
+                    '</div>'
+            ].join('')
+        };
+        var html = '';
+
+        function formatString(str, obj) {
+            return str.replace(/\{\{(\w+)}}/g, function (match, key) {
+                return obj[key];
+            });
+        }
+
+        var Action = {
+            create: function (data, view) {
+                if (data.length) {
+                    for (var i = 0; i < data.length; i++) {
+                        html += formatString(tpl[view], data[i]);
+                    }
+                } else {
+                    html += formatString(tpl[view], data);
+                }
+            },
+            display: function (container, data, view) {
+                data && this.create(data, view);
+                document.getElementById(container).innerHTML = html;
+                html = '';
+            }
+        };
+        return function execute(msg) {
+            msg.param = {}.toString.call(msg.param) === '[object Array]' ?
+                    msg.param : [msg.param];
+            Action[msg.command].apply(Action, msg.param);
+        }
+    })();
+
+    //-------------------
+    var productData = [
+        {
+            src: 'img/1.png',
+            text: 'img1'
+        },
+        {
+            src: 'img/2.png',
+            text: 'img2'
+        },
+        {
+            src: 'img/3.png',
+            text: 'img3'
+        }
+    ];
+    var titleData = {
+        title: 'GREAT IMAGES',
+        caption: 'these are truly great images'
+    };
+
+    viewCommand({
+        command: 'display',
+        param: ['title', titleData, 'title']
+    });
+//    viewCommand({
+//        command: 'create',
+//        param: [{
+//            src: 'img/img1.jpg',
+//            text: 'img1'
+//        }, 'product']
+//    });
+    viewCommand({
+        command: 'display',
+        param: ['product', productData, 'product']
+    });
+
+
+</script>
+</body>
+</html>

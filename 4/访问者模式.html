@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button id="btn">button</button>
+<p id="test"></p>
+
+<script>
+
+    function bindIEEvent(el, type, fn, data) {
+        data = data || {};
+        el.attachEvent('on' + type, function (e) {
+            fn.call(el, e, data);
+        });
+    }
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    bindIEEvent($('btn'), 'click', function (e, d) {
+        $('test').innerHTML = e.type + d.text + this.tagName;
+    }, {text: 'text demo'});
+
+
+
+</script>
+</body>
+</html>

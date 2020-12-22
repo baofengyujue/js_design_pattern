@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="container"></div>
+
+<script src="A.js"></script>
+<script>
+
+
+    ~(function (window) {
+        var MVP = function (modName, presenter, data) {
+            MVP.model.setData(modName, data);
+            MVP.presenter.add(modName, presenter);
+        };
+
+        MVP.model = function () {
+            var M = {};
+            M.data = {
+                nav: [
+                    {
+                        text: 'a',
+                        mode: 'news',
+                        url: '#'
+                    },
+                    {
+                        text: 'b',
+                        mode: 'movie',
+                        url: '#'
+                    },
+                    {
+                        text: 'c',
+                        mode: 'game',
+                        url: '#'
+                    },
+                    {
+                        text: 'd',
+                        mode: 'price',
+                        url: '#'
+                    }
+                ]
+            };
+            M.config = {};
+
+            return {
+                getData: function (m) {
+                    return M.data[m];
+                },
+                setData: function (m, v) {
+                    M.data[m] = v;
+                    return v;
+                },
+                getConfig: function (c) {
+                    return M.config[c];
+                },
+                setConfig: function (c, v) {
+                    M.config[c] = v;
+                    return v;
+                }
+            };
+        }();
+
+        MVP.view = function () {
+            var REPLACEKEY = '__REPLACEKEY__';
+
+            function getHTML(str, type) {
+                return str
+                        .replace(/^(\w+)([^\{}]*)?(\{([\$\w]+)})?(.*?)$/g, function (match, $1, $2, $3, $4, $5) {
+                            $2 = $2 || '';
+                            $3 = $3 || '';
+                            $4 = $4 || '';
+                            $5 = $5.replace(/\{([\$\w]+)}/g, '');
+
+                            return type === 'in' ?
+                            '<' + $1 + $2 + $5 + '>' + $4 + REPLACEKEY + '</' + $1 + '>' :
+                                    type === 'add' ?
+                                    '<' + $1 + $2 + $5 + '>' + $4 + '</' + $1 + '>' + REPLACEKEY :
+                                    '<' + $1 + $2 + $5 + '>' + $4 + '</' + $1 + '>';
+                        })
+                        .replace(/#([\$\-\w]+)/g, ' id="$1"')
+                        .replace(/\.([\$\-\w]+)/g, ' class="$1"')
+                        .replace(/\[(.+)]/g, function (match, key) {
+                            var a = key.replace(/'|"/g, '').split(' ');
+                            var h = '';
+                            for (var j = 0; j < a.length; j++) {
+                                h += ' ' + a[j].replace(/=(.*)/g, '="$1"');
+                            }
+                            return h;
+                        })
+                        .replace(/\$(\w+)/g, '{{$1}}');
+            }
+
+            function eachArr(arr, fn) {
+                for (var i = 0, len = arr.length; i < len; i++) {
+                    fn(i, arr[i], len);
+                }
+            }
+
+            function formatItem(str, replace) {
+                return str.replace(new RegExp(REPLACEKEY, 'g'), replace);
+            }
+
+            return function (str) {
+                var part = str
+                        .replace(/^\s+|\s+$/g, '')
+                        .replace(/^\s+(>)\s+/g, '$1')
+                        .split('>');
+                var html = REPLACEKEY,
+                        item,
+                        nodeTpl;
+
+                eachArr(part, function (partIdx, partVal, partLen) {
+                    item = partVal.split('+');
+                    nodeTpl = REPLACEKEY;
+                    eachArr(item, function (itemIdx, itemVal, itemLen) {
+                        nodeTpl = formatItem(nodeTpl, getHTML(itemVal, itemIdx == itemLen - 1 ?
+                                (partIdx == partLen - 1 ? '' : 'in') : 'add'));
+                    });
+                    html = formatItem(html, nodeTpl);
+                });
+
+                return html;
+            }
+        }();
+
+        MVP.presenter = function () {
+            var V = MVP.view;
+            var M = MVP.model;
+            var C = {
+                nav: function (M, V) {
+                    var data = M.getData('nav');
+                    data[0].choose = 'choose';
+                    data[data.length - 1].last = 'last';
+
+                    var tpl = V('li.$mode $choose $last[data-mode=$mode]>a#nav_$mode.nav-$mode' +
+                            '[href=$url title=$text]>i.nav-icon-$mode+span{$text}');
+
+                    $.create('ul', {
+                        'class': 'navigation',
+                        'id': 'nav'
+                    })
+                            .html(A.formatString(tpl, data))
+                            .appendTo('#container');
+
+                }
+            };
+
+            return {
+                init: function () {
+                    for (var i in C) {
+                        C[i] && C[i](M, V, i);
+                    }
+                },
+                add: function (modName, presenter) {
+                    C[modName] = presenter;
+                    return this;
+                }
+            };
+        }();
+
+        MVP.init = function () {
+            this.presenter.init();
+        };
+
+        window.MVP = MVP;
+    })(window);
+
+
+    window.onload = function () {
+        MVP.init();
+    }
+
+</script>
+</body>
+</html>

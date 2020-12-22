@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<ul id="container_1">
+    <li>111</li>
+    <li>222</li>
+    <li>333</li>
+    <li>444</li>
+    <li>555</li>
+    <li>666</li>
+    <li>777</li>
+</ul>
+<ul id="container_2">
+    <li>111</li>
+    <li>222</li>
+    <li>333</li>
+    <li>444</li>
+    <li>555</li>
+    <li>666</li>
+    <li>777</li>
+</ul>
+
+<script>
+    var Iterator = function (items, container) {
+        container = container && document.getElementById(container) || document;
+        items = container.getElementsByTagName(items);
+        var len = items.length,
+                idx = 0,
+                slice = [].slice;
+
+        return {
+            first: function () {
+                idx = 0;
+                return items[idx];
+            },
+            last: function () {
+                idx = len - 1;
+                return items[idx];
+            },
+            prev: function () {
+                if (--idx > 0) {
+                    return items[idx];
+                } else {
+                    idx = 0;
+                    return null;
+                }
+            },
+            next: function () {
+                if (++idx < len) {
+                    return items[idx];
+                } else {
+                    idx = len - 1;
+                    return null;
+                }
+            },
+            get: function (num) {
+                idx = num >= 0 ? (num <= len - 1 ? num : len - 1 ) : (-num <= len ? num + len : 0);
+                return items[idx];
+            },
+            forEach: function (fn) {
+                // splice.call(arguments, 1)和数组的行为一致，
+                // 会将arguments的值改变，用slice就好了
+                var args = slice.call(arguments, 1);
+                for (var i = 0; i < len; i++) {
+                    fn.apply(items[i], args);
+                }
+            },
+            forItem: function (num, fn) {
+                if ({}.toString.call(fn) === '[object Function]') {
+                } else {
+                    throw new Error('参数输入不正确');
+                }
+                fn.apply(this.get(num), slice.call(arguments, 2));
+            },
+            allExclude: function (num, allFn) {
+                // 写这么复杂是为了打散数组，拼合参数
+                this.forEach.bind(this, allFn).apply(this, [].slice.call(arguments, 2, -1));
+                var numFn;
+                if ({}.toString.call([].slice.call(arguments, -1)[0]) === '[object Function]') {
+                    numFn = [].slice.call(arguments, -1)[0];
+                } else {
+                    throw new Error('参数输入不正确');
+                }
+                if ({}.toString.call(num) === '[object Array]') {
+                    for (var i = 0; i < num.length; i++) {
+                        this.forItem(num[i], numFn);
+                    }
+                } else {
+                    this.forItem(num, numFn);
+                }
+            }
+        };
+    };
+
+    var i1 = new Iterator('li', 'container_1');
+    var i2 = new Iterator('li', 'container_2');
+
+    console.log(i1.first());
+    console.log(i1.prev());
+    console.log(i1.next());
+    console.log(i1.get(10));
+    console.log(i1.get(-1));
+    //-----------------------------------
+    i1.forEach(function (text, color) {
+        this.innerHTML = text;
+        this.style.backgroundColor = color;
+    }, 'test', 'green');
+
+    i1.forItem(-2, function (text, color) {
+        this.innerHTML = text;
+        this.style.backgroundColor = color;
+    }, 'forItem', 'red');
+    //-----------------------------------
+    i2.allExclude([1, 4], function (text, color) {
+        this.innerHTML = text;
+        this.style.backgroundColor = color;
+    }, 'hello', 'blue', function () {
+        this.style.backgroundColor = 'red';
+    });
+    //-----------------------------------
+
+</script>
+</body>
+</html>

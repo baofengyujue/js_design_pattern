@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body, ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .slidebar {
+            position: relative;
+            width: 50px;
+        }
+
+        .slidebar-inner {
+            position: relative;
+        }
+
+        .icon img {
+            display: block;
+        }
+
+        li .box {
+            display: none;
+        }
+
+        li.show .box {
+            display: initial;
+        }
+
+        .title {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<script src="A.js"></script>
+<script>
+
+    $(function () {
+        var MVC = MVC || {};
+        MVC.model = function () {
+            var M = {};
+            M.data = {
+                slideBar: [
+                    {
+                        text: 'a',
+                        icon: 'i1.png',
+                        title: 'aaa',
+                        content: 'AAA',
+                        img: 'm1.png',
+                        href: '#'
+                    },
+                    {
+                        text: 'b',
+                        icon: 'i2.png',
+                        title: 'bbb',
+                        content: 'BBB',
+                        img: 'm2.png',
+                        href: '#'
+                    },
+                    {
+                        text: 'c',
+                        icon: 'i3.png',
+                        title: 'ccc',
+                        content: 'CCC',
+                        img: 'm3.png',
+                        href: '#'
+                    },
+                    {
+                        text: 'd',
+                        icon: 'i4.png',
+                        title: 'ddd',
+                        content: 'DDD',
+                        img: 'm4.png',
+                        href: '#'
+                    },
+                    {
+                        text: 'e',
+                        icon: 'i5.png',
+                        title: 'eee',
+                        content: 'EEE',
+                        img: 'm5.png',
+                        href: '#'
+                    }
+                ]
+            };
+            M.config = {
+                slideBarCloseAnimate: false
+            };
+            return {
+                getData: function (m) {
+                    return M.data[m];
+                },
+                getConfig: function (c) {
+                    return M.config[c];
+                },
+                setData: function (m, v) {
+                    M.data[m] = v;
+                    return this;
+                },
+                setConfig: function (c, v) {
+                    M.config[c] = v;
+                    return this;
+                }
+            };
+        }();
+
+
+        MVC.view = function () {
+            var M = MVC.model;
+            var V = {
+                createSlideBar: function () {
+                    var html = '',
+                            data = M.getData('slideBar');
+
+                    if (!data || !data.length) {
+                        return;
+                    }
+
+//                    var dom = $('<div id="slideBar" class="slideBar"></div>');
+                    var dom = $.create('div', {
+                        'class': 'slidebar',
+                        'id': 'slidebar'
+                    });
+
+                    var tpl = {
+                        container: [
+                            '<div class="slidebar-inner"><ul>{{content}}</ul></div>',
+                            '<a class="slidebar-close" title="fold" href="#">&times;&times;&times;</a>'
+                        ].join(''),
+                        item: [
+                            '<li>',
+                            '<a class="icon" href="{{href}}">',
+                            '<img src="img/icon/{{icon}}">',
+                            '<span>{{text}}</span>',
+                            '</a>',
+                            '<div class="box">',
+                            '<div>',
+                            '<a class="title" href="{{href}}">{{title}}</a>',
+                            '<a href="{{href}}">{{content}}</a>',
+                            '</div>',
+                            '<a class="img" href="{{href}}"><img src="img/pic/{{img}}"></a>',
+                            '</div>',
+                            '</li>'
+                        ].join('')
+                    };
+
+                    for (var i = 0; i < data.length; i++) {
+                        html += $.formatString(tpl.item, data[i]);
+                    }
+
+                    dom
+                            .html($.formatString(tpl.container, {content: html}))
+                            .appendTo('body');
+
+                }
+            };
+            return function (v) {
+                V[v]();
+            }
+        }();
+
+
+        MVC.controller = function () {
+            var M = MVC.model;
+            var V = MVC.view;
+            var C = {
+                initSlideBar: function () {
+                    V('createSlideBar');
+                    $('li', 'slidebar')
+                            .on('mouseover', function (e) {
+                                $(this).addClass('show');
+                            })
+                            .on('mouseout', function (e) {
+                                $(this).removeClass('show');
+                            });
+
+                    $('.slidebar-close', 'slidebar')
+                            .on('click', function (e) {
+                                if (M.getConfig('slideBarCloseAnimate')) {
+                                    return false;
+                                }
+                                M.setConfig('slideBarCloseAnimate', true);
+                                var $this = $(this);
+                                if ($this.hasClass('isClose')) {
+                                    $('.slidebar-inner', 'slidebar')
+                                            .animate({
+                                                duration: 800,
+                                                type: 'easeOutQuart',
+                                                main: function (dom) {
+                                                    dom.css('left', -50 + this.tween * 50 + 'px');
+                                                },
+                                                end: function () {
+                                                    $this.removeClass('isClose');
+                                                    M.setConfig('slideBarCloseAnimate', false);
+                                                }
+                                            });
+                                } else {
+                                    $('.slidebar-inner', 'slidebar')
+                                            .animate({
+                                                duration: 800,
+                                                type: 'easeOutQuart',
+                                                main: function (dom) {
+                                                    dom.css('left', this.tween * -50 + 'px');
+                                                },
+                                                end: function () {
+                                                    $this.addClass('isClose');
+                                                    M.setConfig('slideBarCloseAnimate', false);
+                                                }
+                                            });
+                                }
+                            });
+                }
+            };
+
+            C.initSlideBar();
+        }();
+    });
+
+</script>
+</body>
+</html>

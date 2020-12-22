@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .ui-progressbar {
+            height: 50px;
+            background-color: gray;
+        }
+
+        .ui-progressbar > div {
+            background-color: greenyellow;
+            height: 100%;
+        }
+
+        .ui-slider {
+            position: relative;
+            height: 50px;
+            background-color: gray;
+        }
+
+        .ui-slider > div {
+            height: 100%;
+            background-color: greenyellow;
+        }
+
+        .ui-slider > span {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 20px;
+            background-color: aqua;
+            cursor: move;
+        }
+
+        .ui-slider em,
+        .ui-slider b {
+            position: absolute;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<div data-bind="type:'progressbar',data:{position:60,total:200}"></div>
+<br><br>
+<div data-bind="type:'slider',data:{position:60,total:200}"></div>
+
+<script>
+
+    ~(function () {
+        var window = this || (0, eval)('this');
+        var FONTSIZE = function () {
+            return parseInt(document.body.currentStyle ?
+                    document.body.currentStyle['fontSize'] : getComputedStyle(document.body)['fontSize']);
+        }();
+        window.VM = function () {
+            function getBindData(dom) {
+                var data = dom.getAttribute('data-bind');
+                return !!data && (new Function('return {' + data + '}'))();
+            }
+
+            var method = {
+                progressbar: function (dom, data) {
+                    var progress = document.createElement('div'),
+                            param = data.data;
+
+                    progress.style.width = (param.position || 100) + '%';
+                    dom.className += ' ui-progressbar';
+                    dom.appendChild(progress);
+                },
+                slider: function (dom, data) {
+                    var bar = document.createElement('span'),
+                            progress = document.createElement('div'),
+                            totalText = null,
+                            progressText = null,
+                            param = data.data,
+                            width = dom.clientWidth,
+                            left = dom.offsetLeft,
+                            realWidth = (param.position || 100) * width / 100;
+
+                    bar.onmousedown = function () {
+                        document.onmousemove = function (e) {
+                            var e = e || window.event;
+                            var w = e.clientX - left;
+                            setStyle(w < width ? (w > 0 ? w : 0) : width);
+                        };
+                        document.onmouseup = function () {
+                            document.onmousemove = null;
+                            document.onselectstart = null;
+                        };
+                        document.onselectstart = function () {
+                            return false;
+                        }
+                    };
+
+                    dom.innerHTML = '';
+                    if (param.total) {
+                        totalText = document.createElement('b');
+                        progressText = document.createElement('em');
+                        totalText.innerHTML = param.total;
+                        dom.appendChild(totalText);
+                        dom.appendChild(progressText);
+                    }
+
+                    setStyle(realWidth);
+                    dom.className += ' ui-slider';
+                    dom.appendChild(progress);
+                    dom.appendChild(bar);
+
+                    function setStyle(w) {
+                        progress.style.width = w + 'px';
+                        bar.style.left = w - FONTSIZE / 2 + 'px';
+                        if (progressText) {
+                            progressText.style.left = w - FONTSIZE / 2 * 2.4 + 'px';
+                            progressText.innerHTML = parseFloat(w / width * 100).toFixed(2) + '%';
+                        }
+                    }
+                }
+            };
+
+            return function () {
+                var doms = document.body.getElementsByTagName('*'),
+                        ctx = null;
+                // 动态获取长度
+                for (var i = 0; i < doms.length; i++) {
+                    ctx = getBindData(doms[i]);
+                    ctx.type && method[ctx.type] && method[ctx.type](doms[i], ctx);
+                }
+            }
+        }();
+    })();
+
+    window.onload = function () {
+        VM();
+    };
+
+</script>
+</body>
+</html>

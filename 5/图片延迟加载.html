@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        img {
+            display: block;
+            margin: 300px 0;
+        }
+    </style>
+</head>
+<body>
+
+
+<div id="ctnr">
+    <img src="img/gears.gif" alt="" data-src="img/p1.png">
+    <img src="img/gears.gif" alt="" data-src="img/p2.png">
+    <img src="img/gears.gif" alt="" data-src="img/p3.png">
+    <img src="img/gears.gif" alt="" data-src="img/p4.png">
+    <img src="img/gears.gif" alt="" data-src="img/p5.png">
+    <img src="img/gears.gif" alt="" data-src="img/p6.png">
+    <img src="img/gears.gif" alt="" data-src="img/p7.png">
+    <img src="img/gears.gif" alt="" data-src="img/p8.png">
+    <img src="img/gears.gif" alt="" data-src="img/p9.png">
+    <img src="img/gears.gif" alt="" data-src="img/p10.png">
+    <img src="img/gears.gif" alt="" data-src="img/p11.png">
+    <img src="img/gears.gif" alt="" data-src="img/p12.png">
+</div>
+
+<script>
+    function extend(ori, add) {
+        for (var k in add) {
+            ori[k] = add[k];
+        }
+        return ori;
+    }
+    var throttle = function () {
+        var isClear = arguments[0], fn;
+        if (typeof isClear === 'boolean') {
+            fn = arguments[1];
+            fn.__throttleID && clearTimeout(fn.__throttleID);
+        } else {
+            fn = isClear;
+            var param = arguments[1];
+            var p = extend({
+                context: null,
+                args: [],
+                time: 1000
+            }, param);
+            arguments.callee(true, fn);
+            fn.__throttleID = setTimeout(function () {
+                fn.apply(p.context, p.args);
+            }, p.time);
+        }
+    };
+
+
+    function LazyLoad(id) {
+        this.container = document.getElementById(id);
+        this.img = this.getImg();
+        this.init();
+    }
+    LazyLoad.prototype = {
+        init: function () {
+            this.update();
+            this.bindEvent();
+        },
+        getImg: function () {
+            var arr = [];
+            var img = this.container.getElementsByTagName('img');
+            for (var i = 0, len = img.length; i < len; i++) {
+                arr.push(img[i]);
+            }
+            return arr;
+        },
+        update: function () {
+            if (!this.img.length) {
+                return;
+            }
+            var i = this.img.length;
+            for (--i; i > -1; i--) {
+                if (this.shouldShow(i)) {
+                    this.img[i].src = this.img[i].getAttribute('data-src');
+                    this.img.splice(i, 1);
+                }
+            }
+        },
+        shouldShow: function (i) {
+            var img = this.img[i],
+                    scrollTop = document.documentElement.scrollTop || document.body.scrollTop,
+                    scrollBottom = scrollTop + document.documentElement.clientHeight,
+                    imgTop = this.pageY(img),
+                    imgBottom = imgTop + img.offsetHeight;
+
+            return !!(imgBottom > scrollTop && imgBottom < scrollBottom ||
+            (imgTop > scrollTop && imgTop < scrollBottom));
+
+        },
+        pageY: function (el) {
+            if (el.offsetParent) {
+                return el.offsetTop + this.pageY(el.offsetParent);
+            } else {
+                return el.offsetTop;
+            }
+        },
+        on: function (el, type, fn) {
+            el.addEventListener(type, fn, false);
+            return this;
+        },
+        bindEvent: function () {
+            var self = this;
+            this.on(window, 'resize', function () {
+                throttle(self.update, {context: self});
+            }).on(window, 'scroll', function () {
+                throttle(self.update, {context: self});
+            });
+        }
+    };
+
+
+    new LazyLoad('ctnr');
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+<div id="tag_cloud"> '); for (var i = 0; i < tagCloud.length; i++) { var ctx = tagCloud[i]; template_array.push(' <a href="#" class="tag_item '); if (ctx['isSelected']) { template_array.push(' selected '); } template_array.push(' " title="', ctx['title'] ? ctx['title'] : '', '">', ctx['text'] ? ctx['text'] : '', '</a> '); } template_array.push(' </div> "

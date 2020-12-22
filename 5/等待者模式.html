@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+
+    var Waiter = function () {
+        var dfd = [],
+                doneArr = [],
+                failArr = [],
+                slice = [].slice,
+                self = this;
+
+        var Promise = function () {
+            this.resolved = false;
+            this.rejected = false;
+        };
+
+
+        Promise.prototype = {
+            resolve: function () {
+                this.resolved = true;
+                if (!dfd.length) {
+                    return;
+                }
+                for (var i = dfd.length - 1; i > -1; i--) {
+                    if (dfd[i] && !dfd[i].resolved || dfd[i].rejected) {
+                        return;
+                    }
+                    dfd.splice(i, 1);
+                }
+                _exec(doneArr);
+            },
+            reject: function () {
+                this.rejected = true;
+                if (!dfd.length) {
+                    return;
+                }
+                dfd.splice(0);
+                _exec(failArr);
+            }
+        };
+
+
+        self.Deferred = function () {
+            return new Promise();
+        };
+        function _exec(arr) {
+            for (var i = 0; i < arr.length; i++) {
+                try {
+                    arr[i] && arr[i]();
+                } catch (err) {
+
+                }
+            }
+        }
+        self.when = function () {
+            dfd = slice.call(arguments);
+            var i = dfd.length;
+            for (--i; i > -1; i--) {
+                if (!dfd[i] || dfd[i].resolved || dfd[i].rejected || !dfd[i] instanceof Promise) {
+                    dfd.splice(i, 1);
+                }
+            }
+            return self;
+        };
+        self.done = function () {
+            doneArr = doneArr.concat(slice.call(arguments));
+            return self;
+        };
+        self.fail = function () {
+            failArr = failArr.concat(slice.call(arguments));
+            return self;
+        };
+    };
+
+
+    var myWaiter = function () {
+        var _i = 0;
+        return function () {
+            _i++;
+            if (_i == 2) {
+                console.log('all finish');
+            }
+        }
+    }();
+
+
+    var waiter = new Waiter();
+    // promise对象
+    var first = function () {
+        var dtd = waiter.Deferred();
+        setTimeout(function () {
+            console.log('first finish');
+//            dtd.resolve();
+            dtd.reject();
+            myWaiter();
+        }, 5000);
+        return dtd;
+    }();
+
+    var second = function () {
+        var dtd = waiter.Deferred();
+        setTimeout(function () {
+            console.log('second finish');
+            dtd.resolve();
+            myWaiter();
+        }, 10000);
+        return dtd;
+    }();
+
+    waiter
+            .when(first, second) //Waiter对象
+            .done(function () {
+                console.log('all finish callback 1');
+            }, function () {
+                console.log('all finish callback 2');
+            })
+            .fail(function () {
+                console.log('fail');
+            });
+
+
+
+</script>
+</body>
+</html>

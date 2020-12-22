@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<ul id="msg"></ul>
+<span id="msg_num">3</span>
+<input id="user_input" type="text">
+<button id="user_submit">提交</button>
+
+<script>
+    var Observer = (function () {
+        var _messages = {};
+        return {
+            register: function (type, fn) {
+                if (_messages[type]) {
+                    _messages[type].push(fn);
+                } else {
+                    _messages[type] = [fn];
+                }
+                return this;
+            },
+            fire: function (type, args) {
+                if (!_messages[type]) return;
+                var events = {
+                    type: type,
+                    args: args || {}
+                },
+                        i = 0,
+                        len = _messages[type].length;
+
+                for (; i < len; i++) {
+                    _messages[type][i].call(this, events);
+                }
+            },
+            remove: function (type, fn) {
+                if (_messages[type] instanceof Array) {
+                    var i = _messages[type].length - 1;
+                    for (; i > -1; i--) {
+                        _messages[type][i] === fn && _messages[type].splice(i, 1);
+                    }
+                }
+            }
+        };
+    })();
+
+//    Observer.register('test', function (v) {
+//        console.log(v.type, v.args.msg);
+//    });
+//
+//    Observer.fire('test', {msg: 'this is msg'});
+    
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    (function () {
+        function addMsgItem(v) {
+            var text = v.args.text,
+                    ul = $('msg'),
+                    li = document.createElement('li'),
+                    span = document.createElement('span');
+            span.innerHTML = text;
+            span.onclick = function () {
+                ul.removeChild(li);
+                Observer.fire('removeCommentMsg', {
+                    num: -1
+                });
+            };
+            li.appendChild(span);
+            ul.appendChild(li);
+        }
+
+        Observer.register('addCommentMsg', addMsgItem);
+    })();
+
+    (function () {
+        function changeMsgNum(v) {
+            var num = v.args.num;
+            var m_n = $('msg_num');
+            m_n.innerHTML = parseInt(m_n.innerHTML) + num;
+        }
+        Observer
+                .register('addCommentMsg', changeMsgNum)
+                .register('removeCommentMsg', changeMsgNum);
+    })();
+
+    //---------------------
+    (function () {
+        $('user_submit').onclick = function () {
+            var u_i = $('user_input');
+            if (!u_i.value) return;
+            Observer.fire('addCommentMsg', {
+                text: u_i.value,
+                num: 1
+            });
+            u_i.value = '';
+        }
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+
+var a = {
+    a:111,
+    b:this.a,
+//    c:this.d(),
+    d:function () {
+        return this.e();
+    },
+//    c:this.d(),
+    e:function () {
+        return this.a;
+    }
+};
+console.log(a);
+console.log(a.d());
+// 不能在初始化的时候调用该对象的属性或方法
+
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script type="text/template" id="demo_script">
+    <div id="tag_cloud">
+        {{
+        for (var i = 0; i < tagCloud.length; i++) {
+        var ctx = tagCloud[i];
+        }}
+
+        <a href="#" class="tag_item{{
+                if (ctx['isSelected']) { }}
+                    selected
+                {{ } }}
+            " title="{{ctx['title']}}">{{ctx['text']}}</a>
+
+        {{ } }}
+    </div>
+</script>
+
+
+
+<script>
+    console.log();
+
+    var html = document.getElementById('demo_script').innerHTML;
+
+    var
+            left = '{{',
+            right = '}}';
+
+    var p = html.replace(/&gt;?/g, '>')
+            .replace(/&lt;?/g, '<')
+            .replace(/[\r\t\n]/g, '');
+
+    console.log('-----------1-----------');
+    console.log(p);
+
+    p = p.replace(new RegExp(left + '(.*?)' + right, 'g'), "', $1 ? $1 : '', '")
+            .replace(new RegExp(left, 'g'), "');");
+//            .replace(new RegExp(right, 'g'), "template_array.push('");
+
+    console.log('-----------2-----------');
+    console.log(p);
+
+    p = p.replace(new RegExp(right, 'g'), "template_array.push('");
+
+    console.log('-----------3-----------');
+    console.log(p);
+
+    console.log('---------final-------------');
+    console.log(html.replace(/&gt;?/g, '>')
+            .replace(/&lt;?/g, '<')
+            .replace(/[\r\t\n]/g, '')
+            .replace(new RegExp(left + '(.*?)' + right, 'g'), "', $1 ? $1 : '', '")
+            .replace(new RegExp(left, 'g'), "');")
+            .replace(new RegExp(right, 'g'), "template_array.push('"));
+
+
+</script>
+</body>
+</html>

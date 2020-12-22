@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #icon {
+            position: relative;
+        }
+
+        #layer {
+            display: none;
+            position: absolute;
+        }
+
+        #layer.show {
+            display: initial;
+        }
+
+        img {
+            display: none;
+        }
+
+        img.show {
+            display: initial;
+        }
+    </style>
+</head>
+<body>
+
+<div id="icon">
+    <ul class="icon">
+        <li class="weixin">weixin</li>
+        <li class="weibo">weinbo</li>
+    </ul>
+    <div id="layer">
+        <img src="img/1.png" alt="">
+        <img src="img/2.png" alt="">
+    </div>
+</div>
+
+<script>
+    function extend(ori, add) {
+        for (var k in add) {
+            ori[k] = add[k];
+        }
+    }
+    var throttle = function () {
+        var isClear = arguments[0], fn;
+        if (typeof isClear === 'boolean') {
+            fn = arguments[1];
+            fn.__throttleID && clearTimeout(fn.__throttleID);
+        } else {
+            fn = isClear;
+//            var param = arguments[1];
+            var p = {
+                context: null,
+                args: [],
+                time: 1000
+            };
+//            var p = extend({
+//                context: null,
+//                args: [],
+//                time: 300
+//            }, param);
+            arguments.callee(true, fn);
+            fn.__throttleID = setTimeout(function () {
+                fn.apply(p.context, p.args);
+            }, p.time);
+        }
+    };
+
+
+    function gId(id) {
+        return document.getElementById(id);
+    }
+    function gTag(tag, container) {
+        container = container || document;
+        return container.getElementsByTagName(tag);
+    }
+
+    var Layer = function (id) {
+        this.container = gId(id);
+        this.layer = gTag('div', this.container)[0];
+        this.li = gTag('li', this.container);
+        this.img = gTag('img', this.container);
+        this.bindEvent();
+    };
+    Layer.prototype = {
+        bindEvent: function () {
+            var self = this;
+
+            function hideLayer() {
+                self.layer.className = '';
+            }
+
+            function showLayer() {
+                self.layer.className = 'show';
+            }
+
+            self.on(self.container, 'mouseenter', function () {
+                // 清除hideLayer计时器
+                throttle(true, hideLayer);
+                throttle(showLayer);
+            }).on(self.container, 'mouseleave', function () {
+                // 清除showLayer计时器
+                throttle(true, showLayer);
+                throttle(hideLayer);
+            });
+
+            for (var i = 0; i < self.li.length; i++) {
+                self.li[i].idx = i;
+                self.on(self.li[i], 'mouseenter', function () {
+                    var idx = this.idx;
+                    for (var j = 0; j < self.img.length; j++) {
+                        self.img[j].className = '';
+                    }
+                    self.img[idx].className = 'show';
+                    self.layer.style.left = 100 * idx + 'px';
+                });
+            }
+        },
+        on: function (el, type, fn) {
+            el.addEventListener(type, fn, false);
+            return this;
+        }
+    };
+
+    new Layer('icon');
+</script>
+</body>
+</html>
